@@ -1,0 +1,88 @@
+ <project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+ 
+    <groupId>com.example</groupId>
+<artifactId>hola-mundo-in</artifactId>
+<version>1.0-SNAPSHOT</version>
+ 
+    <dependencies>
+<!-- JUnit para pruebas -->
+<dependency>
+<groupId>org.junit.jupiter</groupId>
+<artifactId>junit-jupiter-api</artifactId>
+<version>5.7.2</version>
+<scope>test</scope>
+</dependency>
+<dependency>
+<groupId>org.junit.jupiter</groupId>
+<artifactId>junit-jupiter-engine</artifactId>
+<version>5.7.2</version>
+<scope>test</scope>
+</dependency>
+</dependencies>
+<build>
+<plugins>
+<plugin>
+<groupId>org.apache.maven.plugins</groupId>
+<artifactId>maven-compiler-plugin</artifactId>
+<version>3.8.1</version>
+<configuration>
+<source>11</source>
+<target>11</target>
+</configuration>
+</plugin>
+</plugins>
+</build>
+</project>
+ 
+-- deploy.bat
+ 
+@echo off
+echo Desplegando la aplicación...
+ 
+mvn clean install
+java -cp target/classes HolaMundo
+ 
+echo Despliegue completado.
+ 
+-- main.yml
+ 
+name: CI/CD
+ 
+on:
+  push:
+    branches:
+      - main
+ 
+jobs:
+  build:
+    runs-on: windows-latest
+ 
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v2
+ 
+      - name: Configurar Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+ 
+      - name: Compilar el proyecto
+        run: mvn clean install
+        shell: cmd
+ 
+      - name: Ejecutar pruebas
+        run: mvn test
+        shell: cmd
+ 
+      - name: Dar permisos a deploy.bat
+        run: git update-index --chmod=+x deploy.bat
+        shell: bash
+ 
+      - name: Ejecutar deploy.bat
+        run: .\deploy.bat
+        shell: cmd
